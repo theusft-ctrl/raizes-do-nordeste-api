@@ -1,0 +1,29 @@
+{
+  "name": "raizes-do-nordeste-api",
+  "version": "1.0.0",
+  "description": "API REST Back-End da Rede de Lanchonetes Raizes do Nordeste - Projeto Multidisciplinar UNINTER 2026 (RU 5057317)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "migrate": "node database/migrate.js",
+    "seed": "node database/seed.js",
+    "setup": "node database/migrate.js && node database/seed.js",
+    "test": "node tests/run_tests.js"
+  },
+  "keywords": [
+    "raizes-do-nordeste",
+    "uninter",
+    "backend",
+    "rest-api",
+    "clean-architecture",
+    "ddd",
+    "lgpd",
+    "openapi"
+  ],
+  "author": "Matheus Vargas de Freitas (RU: 5057317)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
