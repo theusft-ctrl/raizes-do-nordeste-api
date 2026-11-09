@@ -1,0 +1,226 @@
+{
+  "executadosEm": "2026-11-09T22:52:02.482Z",
+  "totalCenarios": 12,
+  "cenarios": [
+    {
+      "id": "T01",
+      "tipo": "POSITIVO",
+      "cenario": "Autenticacao com credenciais validas (JWT)",
+      "endpoint": "POST /auth/login",
+      "statusEsperado": 200,
+      "statusObtido": 200,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "tokenType": "Bearer",
+        "user": {
+          "id": 3,
+          "nome": "Maria Clara (Cliente Fidelidade)",
+          "email": "maria.cliente@exemplo.com",
+          "perfil": "CLIENTE",
+          "consentimentoLgpd": true
+        }
+      }
+    },
+    {
+      "id": "T02",
+      "tipo": "NEGATIVO",
+      "cenario": "Acesso a endpoint protegido sem token JWT (401)",
+      "endpoint": "GET /pedidos",
+      "statusEsperado": 401,
+      "statusObtido": 401,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "NAO_AUTENTICADO",
+        "message": "Token de autenticacao JWT ausente ou malformado.",
+        "details": [],
+        "timestamp": "2026-11-09T22:52:01.310Z",
+        "path": "/pedidos",
+        "requestId": "req-dcb1e320"
+      }
+    },
+    {
+      "id": "T03",
+      "tipo": "NEGATIVO",
+      "cenario": "Acesso a operacao restrita com perfil sem permissao (CLIENTE tentando movimentar estoque - 403)",
+      "endpoint": "POST /estoque/movimentacoes",
+      "statusEsperado": 403,
+      "statusObtido": 403,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "PERMISSAO_INSUFICIENTE",
+        "message": "O perfil 'CLIENTE' nao possui permissao para acessar este recurso. Perfis exigidos: GERENTE, ADMIN.",
+        "details": [],
+        "timestamp": "2026-11-09T22:52:01.313Z",
+        "path": "/estoque/movimentacoes",
+        "requestId": "req-4f4efe9b"
+      }
+    },
+    {
+      "id": "T04",
+      "tipo": "NEGATIVO",
+      "cenario": "Criacao de pedido sem o campo obrigatorio canalPedido (422)",
+      "endpoint": "POST /pedidos",
+      "statusEsperado": 422,
+      "statusObtido": 422,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "ERRO_VALIDACAO_CONTRATO",
+        "message": "Os dados informados no pedido sao invalidos.",
+        "details": [
+          {
+            "field": "canalPedido",
+            "issue": "O campo canalPedido e obrigatorio (valores aceitos: APP, TOTEM, BALCAO, PICKUP, WEB)."
+          }
+        ],
+        "timestamp": "2026-11-09T22:52:01.315Z",
+        "path": "/pedidos",
+        "requestId": "req-44f00af1"
+      }
+    },
+    {
+      "id": "T05",
+      "tipo": "NEGATIVO",
+      "cenario": "Criacao de pedido com quantidade negativa de itens (422)",
+      "endpoint": "POST /pedidos",
+      "statusEsperado": 422,
+      "statusObtido": 422,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "ERRO_VALIDACAO_CONTRATO",
+        "message": "Os dados informados no pedido sao invalidos.",
+        "details": [
+          {
+            "field": "itens[0].quantidade",
+            "issue": "A quantidade deve ser um numero inteiro maior que zero."
+          }
+        ],
+        "timestamp": "2026-11-09T22:52:01.317Z",
+        "path": "/pedidos",
+        "requestId": "req-39ff257c"
+      }
+    },
+    {
+      "id": "T06",
+      "tipo": "POSITIVO",
+      "cenario": "Consulta de cardapio disponivel na Unidade Matriz Recife (200)",
+      "endpoint": "GET /unidades/1/cardapio?apenasDisponiveis=true",
+      "statusEsperado": 200,
+      "statusObtido": 200,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "unidade": "Unidade Matriz - Boa Viagem",
+        "totalItensDisponiveis": 5
+      }
+    },
+    {
+      "id": "T07",
+      "tipo": "POSITIVO",
+      "cenario": "Criacao de pedido valido com canalPedido=TOTEM, calculo de desconto e reserva de estoque (201)",
+      "endpoint": "POST /pedidos",
+      "statusEsperado": 201,
+      "statusObtido": 201,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "pedidoId": 1,
+        "codigoPedido": "RN-2026-721449",
+        "canalPedido": "TOTEM",
+        "status": "AGUARDANDO_PAGAMENTO",
+        "subtotal": 81.6,
+        "desconto": 8.16,
+        "total": 73.44
+      }
+    },
+    {
+      "id": "T08",
+      "tipo": "NEGATIVO",
+      "cenario": "Criacao de pedido com produto inexistente no catalogo da unidade (404)",
+      "endpoint": "POST /pedidos",
+      "statusEsperado": 404,
+      "statusObtido": 404,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "PRODUTO_NAO_ENCONTRADO_NA_UNIDADE",
+        "message": "O produto 9999 nao existe ou nao e comercializado na unidade Unidade Matriz - Boa Viagem.",
+        "details": [
+          {
+            "field": "itens[0].produtoId",
+            "issue": "Produto 9999 inexistente na unidade 1"
+          }
+        ],
+        "timestamp": "2026-11-09T22:52:01.774Z",
+        "path": "/pedidos",
+        "requestId": "req-78307c91"
+      }
+    },
+    {
+      "id": "T09",
+      "tipo": "NEGATIVO",
+      "cenario": "Bloqueio de venda por estoque insuficiente na unidade (409 Conflict)",
+      "endpoint": "POST /pedidos",
+      "statusEsperado": 409,
+      "statusObtido": 409,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "error": "ESTOQUE_INSUFICIENTE",
+        "message": "Nao ha quantidade suficiente para um ou mais itens.",
+        "details": [
+          {
+            "field": "itens[0].quantidade",
+            "issue": "Disponivel: 3"
+          }
+        ],
+        "timestamp": "2026-11-09T22:52:01.838Z",
+        "path": "/pedidos",
+        "requestId": "req-624f4d7b"
+      }
+    },
+    {
+      "id": "T10",
+      "tipo": "POSITIVO",
+      "cenario": "Simulacao de Pagamento Mock RECUSADO atualizando pedido para PAGAMENTO_RECUSADO",
+      "endpoint": "POST /pagamentos/mock",
+      "statusEsperado": 200,
+      "statusObtido": 200,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "transacaoExternaId": "GW-MOCK-1794264721861-8394",
+        "statusPagamento": "RECUSADO",
+        "statusPedidoAtualizado": "PAGAMENTO_RECUSADO",
+        "mensagem": "Pagamento negado pelo emissor/gateway externo (Mock): saldo/limite insuficiente."
+      }
+    },
+    {
+      "id": "T11",
+      "tipo": "POSITIVO",
+      "cenario": "Fluxo A Completo: Pagamento Mock APROVADO -> EM_PREPARO -> PRONTO -> ENTREGUE + Credito de Fidelidade",
+      "endpoint": "POST /pagamentos/mock + PATCH /pedidos/{id}/status",
+      "statusEsperado": 200,
+      "statusObtido": 200,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "transacaoExternaId": "GW-MOCK-1794264721970-4363",
+        "statusFinalPedido": "ENTREGUE",
+        "pontosFidelidadeCreditados": 73
+      }
+    },
+    {
+      "id": "T12",
+      "tipo": "POSITIVO",
+      "cenario": "Filtro de pedidos por multicanalidade (?canalPedido=TOTEM) e rastreabilidade em /auditoria",
+      "endpoint": "GET /pedidos?canalPedido=TOTEM & GET /auditoria",
+      "statusEsperado": 200,
+      "statusObtido": 200,
+      "resultado": "PASSOU",
+      "resumoResposta": {
+        "pedidosFiltradosNoCanalTotem": 1,
+        "totalLogsAuditoriaRegistrados": 7,
+        "ultimasAcoesAuditadas": [
+          "PEDIDO_MUDANCA_STATUS",
+          "PEDIDO_MUDANCA_STATUS",
+          "PAGAMENTO_MOCK_APROVADO",
+          "PAGAMENTO_MOCK_RECUSADO"
+        ]
+      }
+    }
+  ]
+}

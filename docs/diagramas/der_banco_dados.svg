@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="Arial, sans-serif">
+  <rect width="960" height="560" fill="#f8fafc"/>
+  <text x="480" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a5f">Diagrama Entidade-Relacionamento (DER) — Banco Relacional SQLite</text>
+
+  <!-- Tabelas -->
+  <g font-size="11">
+    <!-- UNIDADES -->
+    <rect x="25" y="50" width="200" height="125" rx="6" fill="#fff" stroke="#1e3a5f" stroke-width="2"/>
+    <rect x="25" y="50" width="200" height="26" rx="6" fill="#1e3a5f"/>
+    <text x="125" y="67" text-anchor="middle" fill="#fff" font-weight="bold">unidades</text>
+    <text x="35" y="92" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="35" y="108" fill="#334155">   nome, cidade, estado</text>
+    <text x="35" y="124" fill="#334155">   tipo_cozinha (COMPLETA/REDUZIDA)</text>
+    <text x="35" y="140" fill="#334155">   ativa (BOOLEAN)</text>
+
+    <!-- PRODUTOS -->
+    <rect x="25" y="215" width="200" height="135" rx="6" fill="#fff" stroke="#1e3a5f" stroke-width="2"/>
+    <rect x="25" y="215" width="200" height="26" rx="6" fill="#1e3a5f"/>
+    <text x="125" y="232" text-anchor="middle" fill="#fff" font-weight="bold">produtos</text>
+    <text x="35" y="257" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="35" y="273" fill="#334155">UQ sku (TEXT)</text>
+    <text x="35" y="289" fill="#334155">   nome, categoria, preco_base</text>
+    <text x="35" y="305" fill="#334155">   sazonal_junino (BOOL)</text>
+    <text x="35" y="321" fill="#334155">   exige_cozinha_completa (BOOL)</text>
+
+    <!-- ESTOQUES -->
+    <rect x="275" y="120" width="210" height="135" rx="6" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+    <rect x="275" y="120" width="210" height="26" rx="6" fill="#0284c7"/>
+    <text x="380" y="137" text-anchor="middle" fill="#fff" font-weight="bold">estoques (1:N)</text>
+    <text x="285" y="162" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="285" y="178" fill="#0284c7">FK unidade_id (UNIQUE c/ prod)</text>
+    <text x="285" y="194" fill="#0284c7">FK produto_id (INTEGER)</text>
+    <text x="285" y="210" fill="#334155">   quantidade_disponivel (&gt;=0)</text>
+    <text x="285" y="226" fill="#334155">   estoque_minimo, preco_regional</text>
+
+    <!-- USUARIOS -->
+    <rect x="25" y="385" width="200" height="150" rx="6" fill="#fff" stroke="#1e3a5f" stroke-width="2"/>
+    <rect x="25" y="385" width="200" height="26" rx="6" fill="#1e3a5f"/>
+    <text x="125" y="402" text-anchor="middle" fill="#fff" font-weight="bold">usuarios (LGPD)</text>
+    <text x="35" y="427" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="35" y="443" fill="#334155">UQ email, senha_hash (scrypt)</text>
+    <text x="35" y="459" fill="#334155">   cpf_hash (SHA-256)</text>
+    <text x="35" y="475" fill="#334155">   perfil (CLIENTE/GERENTE/ADMIN)</text>
+    <text x="35" y="491" fill="#334155">   consentimento_lgpd, anonimizado</text>
+
+    <!-- PEDIDOS -->
+    <rect x="530" y="50" width="210" height="175" rx="6" fill="#fff" stroke="#d97706" stroke-width="2"/>
+    <rect x="530" y="50" width="210" height="26" rx="6" fill="#d97706"/>
+    <text x="635" y="67" text-anchor="middle" fill="#fff" font-weight="bold">pedidos (Omnichannel)</text>
+    <text x="540" y="92" fill="#0f172a">PK id | UQ codigo_pedido</text>
+    <text x="540" y="108" fill="#0284c7">FK cliente_id | FK unidade_id</text>
+    <text x="540" y="124" fill="#b45309" font-weight="bold">   canal_pedido (ENUM Obrigatório)</text>
+    <text x="540" y="140" fill="#334155">   status (AGUARDANDO...ENTREGUE)</text>
+    <text x="540" y="156" fill="#334155">   subtotal, desconto, total</text>
+    <text x="540" y="172" fill="#334155">   forma_pagamento, cupom</text>
+
+    <!-- ITENS_PEDIDO -->
+    <rect x="530" y="255" width="210" height="125" rx="6" fill="#fff" stroke="#0284c7" stroke-width="2"/>
+    <rect x="530" y="255" width="210" height="26" rx="6" fill="#0284c7"/>
+    <text x="635" y="272" text-anchor="middle" fill="#fff" font-weight="bold">itens_pedido (1:N)</text>
+    <text x="540" y="297" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="540" y="313" fill="#0284c7">FK pedido_id | FK produto_id</text>
+    <text x="540" y="329" fill="#334155">   quantidade (&gt;0), preco_unitario</text>
+    <text x="540" y="345" fill="#334155">   subtotal</text>
+
+    <!-- PAGAMENTOS -->
+    <rect x="765" y="50" width="175" height="150" rx="6" fill="#fff" stroke="#16a34a" stroke-width="2"/>
+    <rect x="765" y="50" width="175" height="26" rx="6" fill="#16a34a"/>
+    <text x="852" y="67" text-anchor="middle" fill="#fff" font-weight="bold">pagamentos (Mock)</text>
+    <text x="775" y="92" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="775" y="108" fill="#0284c7">FK pedido_id (1:N)</text>
+    <text x="775" y="124" fill="#334155">UQ transacao_externa_id</text>
+    <text x="775" y="140" fill="#334155">   metodo, valor, status</text>
+    <text x="775" y="156" fill="#334155">   payload_resposta (JSON)</text>
+
+    <!-- FIDELIDADE_CONTAS -->
+    <rect x="275" y="385" width="210" height="135" rx="6" fill="#fff" stroke="#1e3a5f" stroke-width="2"/>
+    <rect x="275" y="385" width="210" height="26" rx="6" fill="#1e3a5f"/>
+    <text x="380" y="402" text-anchor="middle" fill="#fff" font-weight="bold">fidelidade_contas (1:1)</text>
+    <text x="285" y="427" fill="#0f172a">PK id (INTEGER)</text>
+    <text x="285" y="443" fill="#0284c7">FK/UQ cliente_id</text>
+    <text x="285" y="459" fill="#334155">   saldo_pontos (&gt;=0)</text>
+    <text x="285" y="475" fill="#334155">   categoria_cliente (BRONZE/OURO)</text>
+
+    <!-- LOGS_AUDITORIA -->
+    <rect x="530" y="405" width="410" height="125" rx="6" fill="#fff" stroke="#475569" stroke-width="2"/>
+    <rect x="530" y="405" width="410" height="26" rx="6" fill="#475569"/>
+    <text x="735" y="422" text-anchor="middle" fill="#fff" font-weight="bold">logs_auditoria (Rastreabilidade e Segurança)</text>
+    <text x="540" y="447" fill="#0f172a">PK id (INTEGER) | FK usuario_id (NULLABLE) | perfil_usuario</text>
+    <text x="540" y="463" fill="#334155">   acao (LOGIN, PEDIDO_CRIADO, PAGAMENTO_MOCK, MUDANCA_STATUS, ANONIMIZACAO_LGPD)</text>
+    <text x="540" y="479" fill="#334155">   recurso, recurso_id, detalhes (JSON), ip_origem, created_at</text>
+  </g>
+
+  <!-- Conectores -->
+  <g stroke="#64748b" stroke-width="1.8" fill="none">
+    <path d="M225 110 L275 160"/>
+    <path d="M225 275 L275 210"/>
+    <path d="M225 450 L275 450"/>
+    <path d="M225 80 L530 80"/>
+    <path d="M635 225 L635 255"/>
+    <path d="M740 120 L765 120"/>
+  </g>
+</svg>

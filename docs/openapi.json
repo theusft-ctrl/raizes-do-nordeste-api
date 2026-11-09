@@ -1,0 +1,486 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Rede Raízes do Nordeste — Trilha Back-End (UNINTER 2026)",
+    "version": "1.0.0",
+    "description": "API RESTful em arquitetura em camadas (Domain, Application, Infrastructure, API) para gestão omnichannel (APP, TOTEM, BALCAO, PICKUP, WEB), controle de estoque por unidade, programa de fidelização com conformidade LGPD, integração desacoplada de pagamentos (Mock) e logs de auditoria.",
+    "contact": {
+      "name": "Matheus Vargas de Freitas (RU: 5057317) - CST Análise e Desenvolvimento de Sistemas (Polo Uninter Canoas)"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local de Desenvolvimento e Testes"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErroPadrao": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "ESTOQUE_INSUFICIENTE"
+          },
+          "message": {
+            "type": "string",
+            "example": "Não há quantidade suficiente para um ou mais itens."
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "itens[0].quantidade"
+                },
+                "issue": {
+                  "type": "string",
+                  "example": "Disponível: 1"
+                }
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-09T12:00:00Z"
+          },
+          "path": {
+            "type": "string",
+            "example": "/pedidos"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "req-9f8a7b6c"
+          }
+        }
+      },
+      "CriarPedidoRequest": {
+        "type": "object",
+        "required": [
+          "unidadeId",
+          "canalPedido",
+          "itens",
+          "formaPagamento"
+        ],
+        "properties": {
+          "unidadeId": {
+            "type": "integer",
+            "example": 1
+          },
+          "clienteId": {
+            "type": "integer",
+            "example": 3
+          },
+          "canalPedido": {
+            "type": "string",
+            "enum": [
+              "APP",
+              "TOTEM",
+              "BALCAO",
+              "PICKUP",
+              "WEB"
+            ],
+            "example": "TOTEM"
+          },
+          "formaPagamento": {
+            "type": "string",
+            "enum": [
+              "PIX",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO",
+              "MOCK"
+            ],
+            "example": "PIX"
+          },
+          "cupomPromocional": {
+            "type": "string",
+            "nullable": true,
+            "example": "SAOJOAO10"
+          },
+          "pontosResgatados": {
+            "type": "integer",
+            "example": 0
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "produtoId",
+                "quantidade"
+              ],
+              "properties": {
+                "produtoId": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "quantidade": {
+                  "type": "integer",
+                  "example": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "1. Autenticação (/auth)"
+        ],
+        "summary": "Autentica usuário e retorna token JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "senha"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "maria.cliente@exemplo.com"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "example": "Cliente@123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticado com sucesso (retorna accessToken JWT)"
+          },
+          "401": {
+            "description": "Credenciais inválidas"
+          },
+          "422": {
+            "description": "Dados de entrada inválidos"
+          }
+        }
+      }
+    },
+    "/usuarios": {
+      "post": {
+        "tags": [
+          "2. Usuários e LGPD (/usuarios)"
+        ],
+        "summary": "Cadastra novo usuário com registro explícito de consentimento LGPD",
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado com sucesso"
+          },
+          "409": {
+            "description": "E-mail já cadastrado"
+          },
+          "422": {
+            "description": "Erro de validação"
+          }
+        }
+      }
+    },
+    "/usuarios/{id}/anonimizar": {
+      "post": {
+        "tags": [
+          "2. Usuários e LGPD (/usuarios)"
+        ],
+        "summary": "Anonimiza dados pessoais do titular (Direito ao Esquecimento - Art. 18 LGPD)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados anonimizados com sucesso"
+          },
+          "401": {
+            "description": "Não autenticado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          }
+        }
+      }
+    },
+    "/unidades": {
+      "get": {
+        "tags": [
+          "3. Unidades e Cardápio (/unidades)"
+        ],
+        "summary": "Lista todas as unidades da franquia Raízes do Nordeste",
+        "responses": {
+          "200": {
+            "description": "Lista de unidades"
+          }
+        }
+      }
+    },
+    "/unidades/{id}/cardapio": {
+      "get": {
+        "tags": [
+          "3. Unidades e Cardápio (/unidades)"
+        ],
+        "summary": "Consulta o cardápio regionalizado e disponibilidade de estoque da unidade",
+        "responses": {
+          "200": {
+            "description": "Cardápio da unidade"
+          },
+          "404": {
+            "description": "Unidade não encontrada"
+          }
+        }
+      }
+    },
+    "/estoque/movimentacoes": {
+      "post": {
+        "tags": [
+          "4. Estoque (/estoque)"
+        ],
+        "summary": "Registra entrada ou saída manual de estoque em uma unidade (GERENTE/ADMIN)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estoque atualizado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado para perfil CLIENTE"
+          },
+          "409": {
+            "description": "Saldo de estoque insuficiente"
+          }
+        }
+      }
+    },
+    "/pedidos": {
+      "post": {
+        "tags": [
+          "5. Pedidos e Multicanalidade (/pedidos)"
+        ],
+        "summary": "Cria um novo pedido validando canalPedido (APP, TOTEM, BALCAO, PICKUP, WEB) e estoque",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarPedidoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pedido criado com sucesso e estoque reservado"
+          },
+          "401": {
+            "description": "Token JWT ausente ou inválido"
+          },
+          "404": {
+            "description": "Unidade ou produto inexistente"
+          },
+          "409": {
+            "description": "Estoque insuficiente ou restrição de cozinha reduzida"
+          },
+          "422": {
+            "description": "Campo canalPedido ausente/inválido ou quantidade negativa"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "5. Pedidos e Multicanalidade (/pedidos)"
+        ],
+        "summary": "Lista pedidos com suporte a filtro por multicanalidade (?canalPedido=TOTEM) e paginação",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "canalPedido",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "APP",
+                "TOTEM",
+                "BALCAO",
+                "PICKUP",
+                "WEB"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de pedidos filtrada por canal"
+          },
+          "401": {
+            "description": "Não autenticado"
+          }
+        }
+      }
+    },
+    "/pedidos/{id}": {
+      "get": {
+        "tags": [
+          "5. Pedidos e Multicanalidade (/pedidos)"
+        ],
+        "summary": "Consulta detalhes completos de um pedido, itens e transações de pagamento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do pedido"
+          },
+          "404": {
+            "description": "Pedido não encontrado"
+          }
+        }
+      }
+    },
+    "/pedidos/{id}/status": {
+      "patch": {
+        "tags": [
+          "5. Pedidos e Multicanalidade (/pedidos)"
+        ],
+        "summary": "Atualiza o status operacional do pedido (EM_PREPARO -> PRONTO -> ENTREGUE / CANCELADO)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status atualizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "409": {
+            "description": "Transição de status inválida"
+          }
+        }
+      }
+    },
+    "/pagamentos/mock": {
+      "post": {
+        "tags": [
+          "6. Pagamentos Desacoplados Mock (/pagamentos)"
+        ],
+        "summary": "Simula processamento de pagamento via Gateway Externo (APROVADO ou RECUSADO)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagamento processado (atualiza status do pedido e pontos de fidelidade)"
+          },
+          "404": {
+            "description": "Pedido não encontrado"
+          },
+          "409": {
+            "description": "Pedido não está aguardando pagamento"
+          }
+        }
+      }
+    },
+    "/fidelidade/{clienteId}": {
+      "get": {
+        "tags": [
+          "7. Programa de Fidelidade (/fidelidade)"
+        ],
+        "summary": "Consulta saldo de pontos, categoria e histórico de fidelidade do cliente",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Extrato de fidelidade"
+          }
+        }
+      }
+    },
+    "/auditoria": {
+      "get": {
+        "tags": [
+          "8. Auditoria e Segurança (/auditoria)"
+        ],
+        "summary": "Lista registros de auditoria de operações sensíveis (restrito a ADMIN e GERENTE)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs de auditoria"
+          },
+          "403": {
+            "description": "Acesso restrito a ADMIN/GERENTE"
+          }
+        }
+      }
+    }
+  }
+}
